@@ -1,0 +1,5 @@
+# UrbanCycle Architecture Decisions
+
+UrbanCycle uses one schema-enabled lakehouse, `lh_urbancycle`, with `bronze`, `silver`, and `gold` schemas instead of creating a separate lakehouse for each medallion layer. The lakehouse represents the whole UrbanCycle data product, while the schemas separate the three processing stages. For example, tables will be named `lh_urbancycle.bronze.trip_raw`, `lh_urbancycle.silver.trip`, and `lh_urbancycle.gold.fact_trip`.
+
+This approach was chosen because UrbanCycle is one data product, so keeping Bronze, Silver, and Gold inside the same lakehouse makes the project simpler to manage and avoids creating unnecessary Fabric items and SQL analytics endpoints. The trade-off is that all three layers share the same lakehouse, so tables must always be written to the correct `bronze`, `silver`, or `gold` schema and permissions must be managed carefully. If UrbanCycle became a larger project with different teams or stronger security requirements, separate lakehouses or workspaces could be used to provide more isolation.
