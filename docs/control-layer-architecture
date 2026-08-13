@@ -1,0 +1,17 @@
+# Control Layer Decision
+
+UrbanCycle uses a separate Fabric Warehouse, `wh_control`, for pipeline control and operational metadata. The analytical data product remains in `lh_urbancycle`, while `wh_control` stores source configuration, incremental load state, pipeline run history, and data-quality results.
+
+The control Warehouse contains four tables:
+
+* `dbo.source_registry`: defines the data sources UrbanCycle knows about and how they should be loaded.
+* `dbo.load_watermark`: stores where the last successful incremental load stopped so the next run knows where to continue.
+* `dbo.run_log`: records each pipeline run, including status, timing, row counts, rejected rows, and errors.
+* `dbo.dq_result`: records the results of data-quality checks for each batch.
+
+This metadata is stored separately from Bronze, Silver, and Gold because it describes **how the data platform operates**, rather than the business data itself.
+
+Fabric Data Factory provides the orchestration control plane used to run and monitor pipelines, but the control Warehouse provides persistent, queryable metadata owned by the UrbanCycle solution. Pipeline monitoring can show that an activity succeeded or failed, while `wh_control` allows the project to answer questions such as which batch loaded a table, what watermark was successfully processed, how many rows were rejected, which data-quality checks failed, and which source configuration was used. 
+
+A Fabric Warehouse was chosen because this control data is small, structured, relational, and SQL-oriented. If UrbanCycle became a high-frequency operational system with many concurrent transactional updates, a transactional database could be considered instead.
+
